@@ -35,7 +35,10 @@ func main() {
 	{
 		todoRoutes.POST("/create", todoController.CreateTodo)
 		todoRoutes.GET("/todos", todoController.GetAllTodos)
-		todoRoutes.GET("/todo/:id", todoController.GetTodo)
+		todoRoutes.GET("/todos/:id", todoController.GetTodo)
+		todoRoutes.PATCH("/todos/:id", todoController.UpdateTodoStatus)
+		todoRoutes.PUT("/todos/:id", todoController.UpdateTodo)
+		todoRoutes.DELETE("/todos/:id", todoController.DeleteTodo)
 	}
 	r.Run()
 }

@@ -16,7 +16,9 @@ type TodoController interface {
 	CreateTodo(ctx *gin.Context)
 	GetAllTodos(ctx *gin.Context)
 	GetTodo(ctx *gin.Context)
-	//UpdateTodo(ctx *gin.Context)
+	UpdateTodoStatus(ctx *gin.Context)
+	UpdateTodo(ctx *gin.Context)
+	DeleteTodo(ctx *gin.Context)
 }
 
 type todoController struct {
@@ -88,7 +90,67 @@ func (c *todoController) GetTodo(ctx *gin.Context) {
 	}
 
 	todo := c.todoService.GetTodo(id)
+
+	if todo.Text == "" {
+		response := helper.BulldErrorResponse("Failed to Process the request", "No Todo available", helper.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+	} else {
+		response := helper.BuildResponse(true, "OK!", todo)
+		ctx.JSON(http.StatusOK, response)
+	}
+
+}
+
+func (c *todoController) UpdateTodoStatus(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+
+	if err != nil {
+		log.Fatal("Can't convert string to int")
+	}
+
+	todo := c.todoService.UpdateTodoStatus(id)
+	response := helper.BuildResponse(true, "OK!", todo)
+	ctx.JSON(http.StatusOK, response)
+}
+
+func (c *todoController) UpdateTodo(ctx *gin.Context) {
+
+	var createDTO dto.CreateTodoDTO
+
+	errDTO := ctx.ShouldBind(&createDTO)
+
+	if errDTO != nil {
+		response := helper.BulldErrorResponse("Failed to Process the request", errDTO.Error(), helper.EmptyObj{})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, response)
+		return
+	}
+
+	idParam := ctx.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+
+	if err != nil {
+		log.Fatal("Can't convert string to int")
+	}
+
+	todo := c.todoService.UpdateTodo(id, createDTO)
 	response := helper.BuildResponse(true, "OK!", todo)
 	ctx.JSON(http.StatusOK, response)
 
+}
+
+func (c *todoController) DeleteTodo(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+
+	id, err := strconv.Atoi(idParam)
+
+	if err != nil {
+		log.Fatal("Can't convert string to int")
+	}
+
+	c.todoService.DeleteTodo(id)
+	response := helper.BuildResponse(true, "Deleted element", helper.EmptyObj{})
+	ctx.JSON(http.StatusOK, response)
 }
